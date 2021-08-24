@@ -51,34 +51,6 @@ namespace DiscordBot
           
         }
 
-        public async Task RunBotAsync()
-        {
-            Console.WriteLine("test");
-            client = new DiscordSocketClient();
-            commands = new CommandService();
-            services = new ServiceCollection().AddSingleton(client).AddSingleton(commands).BuildServiceProvider();
-            string token = "ODc4MTM3MjQ3NzA1MjEwODkw.YR8zCg.cYW81zllVw-fj7iiaEI8HHKsSLI";
-            client.Log += Client_Log;
-
-            await RegisterCommandsAsync();
-            await client.LoginAsync(TokenType.Bot, token);
-            await client.StartAsync();
-            
-            GoogleCredential credential;
-
-            using (var stream = new FileStream("keys.json", FileMode.Open, FileAccess.Read))
-            {
-                credential = GoogleCredential.FromStream(stream).CreateScoped(scopes);
-            }
-            service = new SheetsService(new Google.Apis.Services.BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = applicationName,
-            });
-
-            //GetSheetNames(service);
-            await Task.Delay(-1);
-        }
 
         private Task Client_Log(LogMessage arg)
         {
@@ -108,21 +80,7 @@ namespace DiscordBot
 
         
        
-        static void ReadEntries()
-        {
-            var range = $"Nerofest!A1:F10";
-            var request = service.Spreadsheets.Values.Get(spreadsheetId, range);
-            var response = request.Execute();
-            var values = response.Values;
-            if (values != null && values.Count > 0)
-            {
-                foreach(var row in values)
-                {
-                    Console.WriteLine("{0} {1} | {2} | {3}", row[5], row[4], row[3], row[1]);
-                }
-            }
-            else Console.WriteLine("No data found");
-        }
+       
         public static bool ContainsSheet(string eventName)
         {
             string[] names = sheets.Select(x => x.Name).ToArray();
@@ -146,26 +104,7 @@ namespace DiscordBot
             var appendResponse = appendRequest.Execute();
         }
 
-        static void UpdateEntry()
-        {
-            var range = $"Nerofest!D543";
-            var valueRange = new ValueRange();
-
-            var objectList = new List<object>() { "updated" };
-            valueRange.Values = new List<IList<object>> { objectList };
-
-            var updateRequest = service.Spreadsheets.Values.Update(valueRange, spreadsheetId, range);
-            updateRequest.ValueInputOption = (SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum?)SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-            var updateResponse = updateRequest.Execute();
-        }
-        static void DeleteEntry()
-        {
-            var range = $"Nerofest!A543:F";
-            var requestBody = new ClearValuesRequest();
-
-            var deleteRequest = service.Spreadsheets.Values.Clear(requestBody, spreadsheetId, range);
-            deleteRequest.Execute();
-        }
+       
         static List<Sheet> GetSheets(SheetsService api)
         {
             var getRequest = api.Spreadsheets.Get(spreadsheetId);
